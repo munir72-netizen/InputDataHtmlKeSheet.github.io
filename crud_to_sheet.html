@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>INPUT DATA KE SPREAD SHEET</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        background-color: #0c0a0a;
+      }
+      #form-container {
+        width: 700px;
+        margin: 0 auto;
+        background-color: #f1f1f7;
+        border: 2px solid #da0808;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      #form-container h2 {
+        text-align: center;
+        color: #1e90ff;
+      }
+      #form-container label {
+        font-weight: bold;
+        margin-bottom: 6px;
+        display: block;
+      }
+      #form-container input[type="text"],
+      #form-container select {
+        width: 95%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 2px solid #f1d0d0;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
+      #form-container input[type="submit"] {
+        background-color: #1e90ff;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+      }
+      #form-container input[type="submit"]:hover {
+        background-color: #004b8d;
+      }
+      #footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 12px;
+        color: #f7f1f1;
+      }
+    </style>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+
+  <body>
+    <div id="form-container">
+      <h2>INPUT DATA KE SPREAD SHEET</h2>
+      <form id="myForm">
+        <label for="nama">Nama:</label>
+        <input type="text" id="nama" name="nama" required />
+
+        <label for="jenis_kelamin">Jenis Kelamin:</label>
+        <select id="jenis_kelamin" name="jenis_kelamin" required>
+          <option value="">-- Pilih Jenis Kelamin --</option>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+
+        <label for="kelas">Kelas:</label>
+        <select id="kelas" name="kelas" required>
+          <option value="">-- Pilih Kelas --</option>
+          <option value="X">X</option>
+          <option value="XI">XI</option>
+          <option value="XII">XII</option>
+        </select>
+
+        <label for="provinsi">Provinsi:</label>
+        <select id="provinsi" name="provinsi" required>
+          <option value="">-- Pilih Provinsi --</option>
+          <option value="Jawa Timur">Jawa Timur</option>
+          <option value="Jawa Tengah">Jawa Tengah</option>
+          <option value="Jawa Barat">Jawa Barat</option>
+        </select>
+
+        <label for="kota_kab">Kota/Kabupaten:</label>
+        <select id="kota_kab" name="kota_kab" required>
+          <option value="">-- Pilih Kota/Kabupaten --</option>
+        </select>
+
+        <label for="dusun">Dusun:</label>
+        <input type="text" id="dusun" name="dusun" required />
+
+        <label for="rt_rw">RT/RW:</label>
+        <input type="text" id="rt_rw" name="rt_rw" required />
+
+        <input type="submit" value="Simpan Data" />
+      </form>
+    </div>
+
+    <div id="footer">
+      All Tutorial for you, jangan lupa subscribe karena akan selalu ada update
+    </div>
+
+    <script>
+      // Data kota/kabupaten per provinsi
+      const dataKotaKab = {
+        "Jawa Timur": [
+          "Kab. Mojokerto",
+          "Kab. Sidoarjo",
+          "Kota Surabaya",
+          "Kab. Blitar",
+        ],
+        "Jawa Tengah": ["Kab. Semarang", "Kota Solo", "Kab. Magelang"],
+        "Jawa Barat": ["Kab. Bandung", "Kota Bandung", "Kab. Bogor"],
+      };
+
+      const provinsiSelect = document.getElementById("provinsi");
+      const kotaKabSelect = document.getElementById("kota_kab");
+
+      provinsiSelect.addEventListener("change", function () {
+        const provinsi = this.value;
+        kotaKabSelect.innerHTML =
+          '<option value="">-- Pilih Kota/Kabupaten --</option>';
+        if (provinsi && dataKotaKab[provinsi]) {
+          dataKotaKab[provinsi].forEach((kab) => {
+            const option = document.createElement("option");
+            option.value = kab;
+            option.textContent = kab;
+            kotaKabSelect.appendChild(option);
+          });
+        }
+      });
+
+      // Handle submit dengan fetch
+      const scriptURL =
+        "https://script.google.com/macros/s/AKfycbyuUAZMQEBZzwVF6EwMnduJ6GaaKOF0rZmGk3mn5wJ1hCX24OvmjYILLRZFeZM8mQwS/exec";
+      const form = document.getElementById("myForm");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        fetch(scriptURL, { method: "POST", body: new FormData(form) })
+          .then((res) => res.text()) // ambil response sebagai text dulu
+          .then((text) => {
+            let data;
+            try {
+              data = JSON.parse(text); // parse ke JSON
+            } catch (e) {
+              throw new Error("Respon bukan JSON: " + text);
+            }
+
+            if (data.status === "success") {
+              Swal.fire({
+                icon: "success",
+                title: "Berhasil!",
+                text: data.message + " untuk " + data.nama,
+                confirmButtonColor: "#1e90ff",
+              });
+              form.reset();
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Gagal!",
+                text: "Respon tidak valid dari server.",
+              });
+            }
+          })
+          .catch((err) => {
+            Swal.fire({
+              icon: "error",
+              title: "Gagal!",
+              text: "Terjadi kesalahan koneksi. " + err.message,
+              confirmButtonColor: "#da0808",
+            });
+          });
+      });
+    </script>
+  </body>
+</html>
